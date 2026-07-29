@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dept. Escuelas Particulares — Gestión Documental</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #1B4332;
+      --primary-light: #2D6A4F;
+      --primary-lighter: #40916C;
+      --primary-pale: #D8F3DC;
+      --accent: #D4A017;
+      --accent-light: #F0C040;
+      --bg: #F0F2F5;
+      --card: #FFFFFF;
+      --text: #1A1A2E;
+      --text-sec: #6C757D;
+      --border: #DEE2E6;
+      --danger: #C0392B;
+      --danger-light: #FDEDEC;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--bg); }
+    h1, h2, h3, .font-display { font-family: 'Playfair Display', serif; }
+
+    /* Fondo animado del login */
+    .login-bg {
+      background: linear-gradient(135deg, #0B2618 0%, #1B4332 40%, #2D6A4F 100%);
+      position: relative; overflow: hidden;
+    }
+    .login-bg::before, .login-bg::after {
+      content: ''; position: absolute; border-radius: 50%; opacity: 0.07;
+      background: var(--accent);
+    }
+    .login-bg::before {
+      width: 500px; height: 500px; top: -150px; right: -100px;
+      animation: floatA 18s ease-in-out infinite;
+    }
+    .login-bg::after {
+      width: 350px; height: 350px; bottom: -100px; left: -80px;
+      animation: floatB 22s ease-in-out infinite;
+    }
+    @keyframes floatA {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(-60px, 40px) scale(1.1); }
+    }
+    @keyframes floatB {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(50px, -30px) scale(1.15); }
+    }
+
+    /* Tarjetas de rol */
+    .role-card {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border-radius: 14px; padding: 20px 12px; cursor: pointer;
+      transition: all 0.3s ease; text-align: center; color: #fff;
+    }
+    .role-card:hover { background: rgba(255,255,255,0.16); transform: translateY(-4px); border-color: var(--accent); }
+    .role-card.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 8px 30px rgba(212,160,23,0.35); }
+    .role-card .icon { font-size: 28px; margin-bottom: 8px; }
+
+    /* Formulario login */
+    .login-card {
+      background: #fff; border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.5s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Inputs */
+    .input-field {
+      width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 15px; font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s; background: #FAFBFC;
+    }
+    .input-field:focus { outline: none; border-color: var(--primary-lighter); box-shadow: 0 0 0 3px rgba(45,106,79,0.12); background: #fff; }
+
+    /* Botón principal */
+    .btn-primary {
+      background: var(--primary); color: #fff; border: none; border-radius: 10px;
+      padding: 13px 24px; font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.25s; font-family: 'DM Sans', sans-serif; width: 100%;
+    }
+    .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(27,67,50,0.3); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Botón accent */
+    .btn-accent {
+      background: var(--accent); color: #fff; border: none; border-radius: 10px;
+      padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.25s; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-accent:hover { background: #c49515; transform: translateY(-1px); }
+
+    /* Botón outline */
+    .btn-outline {
+      background: transparent; color: var(--primary); border: 1.5px solid var(--primary-lighter);
+      border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-outline:hover { background: var(--primary-pale); }
+
+    /* Botón danger */
+    .btn-danger-sm {
+      background: transparent; color: var(--danger); border: 1.5px solid var(--danger);
+      border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-danger-sm:hover { background: var(--danger-light); }
+
+    /* Header dashboard */
+    .dash-header {
+      background: var(--primary); color: #fff; padding: 0 20px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 40;
+    }
+
+    /* Tabs de nivel */
+    .tab-btn {
+      padding: 10px 20px; border: none; background: transparent;
+      font-size: 14px; font-weight: 600; color: var(--text-sec);
+      cursor: pointer; border-bottom: 3px solid transparent;
+      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .tab-btn:hover { color: var(--primary); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--accent); }
+
+    /* Tarjeta de archivo */
+    .file-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; transition: all 0.2s; display: flex; align-items: center; gap: 14px;
+    }
+    .file-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--primary-lighter); }
+
+    .file-icon {
+      width: 46px; height: 46px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-box {
+      background: #fff; border-radius: 18px; padding: 28px;
+      max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Dropzone */
+    .dropzone {
+      border: 2px dashed var(--border); border-radius: 14px; padding: 40px 20px;
+      text-align: center; cursor: pointer; transition: all 0.25s; background: #FAFBFC;
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--primary-lighter); background: var(--primary-pale); }
+
+    /* Toast */
+    .toast {
+      padding: 14px 20px; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: toastIn 0.35s ease;
+      display: flex; align-items: center; gap: 10px; max-width: 380px;
+    }
+    .toast.success { background: var(--primary); }
+    .toast.error { background: var(--danger); }
+    .toast.info { background: #2C3E50; }
+    .toast.out { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(60px); } }
+
+    /* Spinner */
+    .spinner {
+      width: 22px; height: 22px; border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-dark {
+      width: 36px; height: 36px; border: 4px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 40px auto;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+    /* Ocultar */
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .role-card { padding: 14px 8px; }
+      .role-card .icon { font-size: 22px; }
+      .role-card .label { font-size: 12px; }
+      .dash-header { padding: 0 12px; height: 54px; }
+      .dash-header .dept-name { font-size: 13px; }
+      .tab-btn { padding: 8px 12px; font-size: 13px; }
+      .file-card { flex-wrap: wrap; }
+      .file-card .file-actions { width: 100%; justify-content: flex-end; }
+    }
+
+    /* Reducir movimiento */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PANTALLA DE LOGIN ==================== -->
+  <div id="loginScreen" class="login-bg min-h-screen flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
+      <!-- Título -->
+      <div class="text-center mb-8 relative z-10">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--accent)] mb-4 shadow-lg">
+          <i class="fas fa-school text-white text-2xl"></i>
+        </div>
+        <h1 class="font-display text-2xl sm:text-3xl text-white mb-2">Escuelas Particulares</h1>
+        <p class="text-[var(--primary-pale)] text-sm">Sistema de Gestión Documental</p>
+      </div>
+
+      <!-- Selección de rol -->
+      <div id="roleSelection" class="grid grid-cols-3 gap-3 mb-6 relative z-10">
+        <div class="role-card" onclick="selectRole('supervisor')" id="roleCard-supervisor">
+          <div class="icon"><i class="fas fa-user-tie"></i></div>
+          <div class="label text-sm font-semibold">Supervisor</div>
+        </div>
+        <div class="role-card" onclick="selectRole('visitador')" id="roleCard-visitador">
+          <div class="icon"><i class="fas fa-clipboard-user"></i></div>
+          <div class="label text-sm font-semibold">Visitador</div>
+        </div>
+        <div class="role-card" onclick="selectRole('admin')" id="roleCard-admin">
+          <div class="icon"><i class="fas fa-users-cog"></i></div>
+          <div class="label text-sm font-semibold">Admin</div>
+        </div>
+      </div>
+
+      <!-- Formulario de login -->
+      <div id="loginForm" class="login-card p-6 sm:p-8 relative z-10 hidden">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-bold" id="formTitle">Iniciar sesión</h2>
+          <button onclick="resetLogin()" class="text-[var(--text-sec)] hover:text-[var(--text)] text-sm">
+            <i class="fas fa-arrow-left mr-1"></i>Regresar
+          </button>
+        </div>
+
+        <div id="formFields">
+          <!-- Se llena dinámicamente -->
+        </div>
+
+        <div id="loginError" class="hidden text-[var(--danger)] text-sm mt-3 bg-[var(--danger-light)] p-3 rounded-lg">
+        </div>
+
+        <button class="btn-primary mt-5" id="loginBtn" onclick="doLogin()">
+          Iniciar sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD ==================== -->
+  <div id="dashboard" class="hidden min-h-screen" style="background: var(--bg);">
+    <!-- Header -->
+    <header class="dash-header">
+      <div class="flex items-center gap-3">
+        <i class="fas fa-school text-[var(--accent)]"></i>
+        <span class="dept-name font-bold text-sm sm:text-base">Dept. Escuelas Particulares</span>
+      </div>
+      <div class="flex items-center gap-3 sm:gap-4">
+        <span class="text-xs sm:text-sm opacity-80" id="headerUser"></span>
+        <button onclick="logout()" class="text-xs sm:text-sm bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition font-medium" aria-label="Cerrar sesión">
+          <i class="fas fa-sign-out-alt mr-1"></i><span class="hidden sm:inline">Salir</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main id="mainContent" class="max-w-5xl mx-auto p-4 sm:p-6">
+      <!-- Se llena dinámicamente -->
+    </main>
+  </div>
+
+  <!-- ==================== MODAL SUBIR ARCHIVO ==================== -->
+  <div id="uploadModal" class="modal-overlay hidden" onclick="closeUploadModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold">Cargar archivo</h3>
+        <button onclick="closeUploadModal()" class="text-[var(--text-sec)] hover:text-[var(--text)] text-xl" aria-label="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div id="dropzone" class="dropzone" onclick="document.getElementById('fileInput').click()"
+           ondragover="event.preventDefault(); this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleDrop(event)">
+        <i class="fas fa-cloud-upload-alt text-4xl text-[var(--primary-lighter)] mb-3"></i>
+        <p class="text-sm font-semibold text-[var(--text)]">Arrastra un archivo aquí</p>
+        <p class="text-xs text-[var(--text-sec)] mt-1">o haz clic para seleccionar</p>
+        <p class="text-xs text-[var(--text-sec)] mt-2">Máximo 25 MB</p>
+        <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)">
+      </div>
+
+      <div id="selectedFile" class="hidden mt-4 bg-[var(--primary-pale)] rounded-xl p-4 flex items-center gap-3">
+        <i class="fas fa-file text-[var(--primary)] text-xl" id="selectedFileIcon"></i>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold truncate" id="selectedFileName"></p>
+          <p class="text-xs text-[var(--text-sec)]" id="selectedFileSize"></p>
+        </div>
+        <button onclick="clearSelectedFile()" class="text-[var(--danger)] hover:text-red-700" aria-label="Quitar archivo">
+          <i class="fas fa-times-circle text-lg"></i>
+        </button>
+      </div>
+
+      <button class="btn-primary mt-5" id="uploadBtn" onclick="doUpload()" disabled>
+        Cargar documento
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL CONFIRMAR ELIMINACIÓN ==================== -->
+  <div id="deleteModal" class="modal-overlay hidden" onclick="closeDeleteModal(event)">
+    <div class="modal-box" style="max-width:400px;" onclick="event.stopPropagation()">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--danger-light)] mb-4">
+          <i class="fas fa-trash-alt text-[var(--danger)] text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Eliminar archivo</h3>
+        <p class="text-sm text-[var(--text-sec)] mb-5" id="deleteFileName"></p>
+        <div class="flex gap-3">
+          <button class="btn-outline flex-1" onclick="closeDeleteModal()">Cancelar</button>
+          <button class="flex-1 bg-[var(--danger)] text-white border-none rounded-[10px] py-2.5 text-sm font-semibold cursor-pointer hover:opacity-90 transition" id="confirmDeleteBtn" onclick="confirmDelete()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOASTS ==================== -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-2" style="pointer-events:none;">
+  </div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // ====================================================
+    // ⚠️ CONFIGURACIÓN — PON AQUÍ LA URL DE TU APPS SCRIPT
+    // Se obtiene al desplegar el proyecto como Web App
+    // ====================================================
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlqmkkXe5EYZpDNqypuvn7SKr82LT_cfGZX6xgJnjdEs5PlmYIQr8dijSfN0qBlTQ/exec';
+
+    // Datos de usuarios (solo para llenar los dropdowns, la validación real está en Apps Script)
+    const SUPERVISORES = [
+      'MARTHA VERONICA ALCALA CHAN',
+      'NAYBI RAQUEL MAY ROSEL',
+      'NICE GÓMEZ SOSA'
+    ];
+
+    const VISITADORES = [
+      'URSULA SANCHEZ ROCHA','THELMA GUADALUPE LÓPEZ TAMAYO','BERTHA MARÍA CEH CASTILLO',
+      'FILIBERTO ALCOCER OCHOA','REYNA MARIA SANTOS UC','RUBI ANGÉLICA SOLIS XOOL',
+      'JOSÉ WILFREDO VIVAS RAMIREZ','MANUEL FELIPE NAH MARTINEZ','LETICIA DEL SOCORRO CEN RUIZ',
+      'MARÍA LUISA NOVELO SOLIS','ELIA GABRIELA RUÍZ SALDIVAR','GUADALUPE DEL SOCORRO CABALLERO GONZÁLEZ',
+      'ERNESTO RENAN CICERO ORTEGÓN','LETICIA ESPERANZA GÓMEZ GEORGE','ELSY DIANELY ALVARADO CISNEROS',
+      'RAMON IVAN GONZÁLEZ GONZÁLEZ','SARA VIRGINIA LÓPEZ GONZÁLEZ','JOSÉ RODOLFO CASTRO ESPAÑA',
+      'ERIK SAMUEL LAVADORES MAY','NIDIA MARÍA SOLIS ALBERTOS','ANGEL ABIMAEL MUTUL EK',
+      'JORGE EDUARDO CABRERA UCAN','KARINA BEATRIZ PACHECO JIMENEZ','NANCY BEATRIZ PINZÓN CORTES',
+      'ELDA MARÍA GÓMEZ GONZÁLEZ','ANA GABRIELA MARTINEZ TAMAYO'
+    ];
+
+    const NIVELES = ['PREESCOLAR', 'PRIMARIA', 'SECUNDARIA'];
+    const NIVEL_COLORES = {
+      PREESCOLAR: { bg: '#FFF3CD', text: '#856404', icon: 'fa-child' },
+      PRIMARIA:   { bg: '#D1ECF1', text: '#0C5460', icon: 'fa-book-open' },
+      SECUNDARIA: { bg: '#D4EDDA', text: '#155724', icon: 'fa-graduation-cap' }
+    };
+
+    // Estado
+    let currentUser = null;
+    let selectedRole = null;
+    let selectedFile = null;
+    let pendingDelete = null;
+    let currentTab = 'PREESCOLAR';
+
+    // ====================================================
+    // COMUNICACIÓN CON EL BACKEND
+    // ====================================================
+    async function apiCall(action, data) {
+      if (APPS_SCRIPT_URL === 'PON_AQUI_LA_URL_DE_TU_APPS_SCRIPT') {
+        throw new Error('Configura la URL del Apps Script en el código HTML');
+      }
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action, ...data })
+      });
+      if (!resp.ok) throw new Error('Error de conexión con el servidor');
+      return await resp.json();
+    }
+
+    // ====================================================
+    // LOGIN
+    // ====================================================
+    function selectRole(role) {
+      selectedRole = role;
+      // Actualizar tarjetas
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+      document.getElementById('roleCard-' + role).classList.add('active');
+
+      // Construir formulario
+      const fields = document.getElementById('formFields');
+      const titles = { supervisor: 'Acceso de Supervisor', visitador: 'Acceso de Visitador', admin: 'Acceso Administrativo' };
+      document.getElementById('formTitle').textContent = titles[role];
+
+      let html = '';
+      if (role === 'supervisor') {
+        html = `
+          <label class="block text-sm font-semibold text-[var(--text-sec)] mb-1.5">Nombre</label>
+          <select id="loginName" class="input-field" aria-label="Seleccionar nombre">
+            <option value="">-- Selecciona tu nombre --</option>
+            ${SUPERVISORES.map(n => `<option value="${n}">${n}</option>`).join('')}
+          </select>
+          <label class="block text-sm font-semibold text-[var(--text-sec)] mb-1.5 mt-4">Contraseña</label>
+          <input type="password" id="loginPass" class="input-field" placeholder="Contraseña de supervisor" aria-label="Contraseña">
+        `;
+      } else if (role === 'visitador') {
+        html = `
+          <label class="block text-sm font-semibold text-[var(--text-sec)] mb-1.5">Nombre</label>
+          <select id="loginName" class="input-field" aria-label="Seleccionar nombre">
+            <option value="">-- Selecciona tu nombre --</option>
+            ${VISITADORES.map(n => `<option value="${n}">${n}</option>`).join('')}
+          </select>
+          <label class="block text-sm font-semibold text-[var(--text-sec)] mb-1.5 mt-4">Contraseña</label>
+          <input type="password" id="loginPass" class="input-field" placeholder="Contraseña de visitador" aria-label="Contraseña">
+        `;
+      } else {
+        html = `
+          <label class="block text-sm font-semibold text-[var(--text-sec)] mb-1.5">Nombre completo</label>
+          <input type="text" id="loginName" class="input-field" placeholder="Escribe tu nombre" aria-label="Nombre">
+          <label class="block text-sm font-semibold text-[var(--text-sec)] mb-1.5 mt-4">Contraseña</label>
+          <input type="password" id="loginPass" class="input-field" placeholder="Contraseña administrativa" aria-label="Contraseña">
+        `;
+      }
+      fields.innerHTML = html;
+      document.getElementById('loginError').classList.add('hidden');
+      document.getElementById('loginForm').classList.remove('hidden');
+    }
+
+    function resetLogin() {
+      selectedRole = null;
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('loginError').classList.add('hidden');
+    }
+
+    async function doLogin() {
+      const nombre = document.getElementById('loginName').value.trim();
+      const password = document.getElementById('loginPass').value;
+      const errEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginBtn');
+
+      if (!nombre || !password) {
+        errEl.textContent = 'Completa todos los campos';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+
+      try {
+        const res = await apiCall('login', { nombre, password, rol: selectedRole });
+        if (res.success) {
+          currentUser = res.user;
+          showDashboard();
+        } else {
+          errEl.textContent = res.error;
+          errEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Iniciar sesión';
+    }
+
+    // Enter en contraseña
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && selectedRole && !document.getElementById('loginForm').classList.contains('hidden')) {
+        doLogin();
+      }
+    });
+
+    // ====================================================
+    // DASHBOARD
+    // ====================================================
+    function showDashboard() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+
+      // Header user info
+      let userInfo = currentUser.nombre;
+      if (currentUser.rol === 'supervisor') userInfo += ' — ' + currentUser.nivel;
+      else if (currentUser.rol === 'visitador') userInfo += ' — Área ' + currentUser.area;
+      document.getElementById('headerUser').textContent = userInfo;
+
+      if (currentUser.rol === 'supervisor') {
+        renderSupervisorDashboard();
+      } else {
+        renderViewerDashboard();
+      }
+    }
+
+    // --- DASHBOARD SUPERVISOR ---
+    function renderSupervisorDashboard() {
+      const nivel = currentUser.nivel;
+      const nc = NIVEL_COLORES[nivel];
+      const main = document.getElementById('mainContent');
+
+      main.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${nc.bg}">
+                <i class="fas ${nc.icon}" style="color:${nc.text}"></i>
+              </div>
+              <h2 class="font-display text-xl sm:text-2xl">${nivel}</h2>
+            </div>
+            <p class="text-sm text-[var(--text-sec)] ml-[52px]">Documentos del nivel — Supervisión: ${currentUser.nombre}</p>
+          </div>
+          <button class="btn-accent flex items-center gap-2 self-start" onclick="openUploadModal()">
+            <i class="fas fa-plus"></i> Subir archivo
+          </button>
+        </div>
+
+        <div id="fileStats" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6"></div>
+        <div id="fileList"></div>
+      `;
+
+      loadFiles(nivel);
+    }
+
+    // --- DASHBOARD VISITADOR / ADMIN ---
+    function renderViewerDashboard() {
+      const main = document.getElementById('mainContent');
+      const rolLabel = currentUser.rol === 'visitador' ? 'Visitador — Área ' + currentUser.area : 'Personal Administrativo';
+
+      main.innerHTML = `
+        <div class="mb-6">
+          <h2 class="font-display text-xl sm:text-2xl mb-1">Documentos disponibles</h2>
+          <p class="text-sm text-[var(--text-sec)]">${rolLabel} — ${currentUser.nombre}</p>
+        </div>
+
+        <div class="flex border-b border-[var(--border)] mb-6 overflow-x-auto">
+          ${NIVELES.map(n => {
+            const nc = NIVEL_COLORES[n];
+            return `<button class="tab-btn ${n === currentTab ? 'active' : ''}" onclick="switchTab('${n}')">
+              <i class="fas ${nc.icon} mr-1.5" style="color:${nc.text}"></i>${n}
+            </button>`;
+          }).join('')}
+        </div>
+
+        <div id="fileList"></div>
+      `;
+
+      loadFiles(currentTab);
+    }
+
+    function switchTab(nivel) {
+      currentTab = nivel;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.closest('.tab-btn').classList.add('active');
+      loadFiles(nivel);
+    }
+
+    // ====================================================
+    // CARGAR Y MOSTRAR ARCHIVOS
+    // ====================================================
+    async function loadFiles(nivel) {
+      const container = document.getElementById('fileList');
+      if (!container) return;
+      container.innerHTML = '<div class="spinner-dark"></div>';
+
+      // Limpiar stats si existe
+      const stats = document.getElementById('fileStats');
+      if (stats) stats.innerHTML = '';
+
+      try {
+        const res = await apiCall('listFiles', { nivel, user: currentUser });
+        if (!res.success) { container.innerHTML = `<p class="text-[var(--danger)]">${res.error}</p>`; return; }
+
+        const files = res.files;
+
+        // Stats (solo supervisor)
+        if (stats && currentUser.rol === 'supervisor') {
+          const totalSize = files.reduce((a, f) => a + (f.size || 0), 0);
+          const lastUpload = files.length > 0 ? formatDate(files[0].updated) : 'Sin archivos';
+          stats.innerHTML = `
+            <div class="bg-white rounded-xl p-4 border border-[var(--border)]">
+              <p class="text-2xl font-bold text-[var(--primary)]">${files.length}</p>
+              <p class="text-xs text-[var(--text-sec)]">Archivos totales</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-[var(--border)]">
+              <p class="text-2xl font-bold text-[var(--primary)]">${formatFileSize(totalSize)}</p>
+              <p class="text-xs text-[var(--text-sec)]">Espacio usado</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-[var(--border)] col-span-2 sm:col-span-1">
+              <p class="text-sm font-bold text-[var(--primary)]">${lastUpload}</p>
+              <p class="text-xs text-[var(--text-sec)]">Última carga</p>
+            </div>
+          `;
+        }
+
+        if (files.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-16">
+              <i class="fas fa-folder-open text-5xl text-[var(--border)] mb-4"></i>
+              <p class="text-[var(--text-sec)] font-medium">No hay documentos en ${nivel}</p>
+              ${currentUser.rol === 'supervisor' ? '<p class="text-sm text-[var(--text-sec)] mt-1">Haz clic en "Subir archivo" para comenzar</p>' : ''}
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `<div class="flex flex-col gap-3">${files.map(f => fileCardHTML(f, nivel)).join('')}</div>`;
+
+      } catch (err) {
+        container.innerHTML = `<p class="text-[var(--danger)]">Error al cargar archivos: ${err.message}</p>`;
+      }
+    }
+
+    function fileCardHTML(file, nivel) {
+      const fi = getFileIconInfo(file.type);
+      const isSup = currentUser.rol === 'supervisor';
+      return `
+        <div class="file-card">
+          <div class="file-icon" style="background:${fi.bg}; color:${fi.color}">
+            <i class="fas ${fi.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate" title="${file.name}">${file.name}</p>
+            <p class="text-xs text-[var(--text-sec)] mt-0.5">
+              ${formatFileSize(file.size)} &middot; ${formatDate(file.updated)}
+            </p>
+          </div>
+          <div class="file-actions flex items-center gap-2 flex-shrink-0">
+            <button class="btn-outline text-xs px-3 py-1.5" onclick="doDownload('${file.id}','${escapeQuotes(file.name)}','${nivel}')">
+              <i class="fas fa-download mr-1"></i>Descargar
+            </button>
+            ${isSup ? `<button class="btn-danger-sm" onclick="askDelete('${file.id}','${escapeQuotes(file.name)}','${nivel}')">
+              <i class="fas fa-trash-alt"></i>
+            </button>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // ====================================================
+    // SUBIR ARCHIVO
+    // ====================================================
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
+      clearSelectedFile();
+    }
+
+    function closeUploadModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById('uploadModal').classList.add('hidden');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
+    }
+
+    function handleFileSelect(e) {
+      if (e.target.files.length > 0) processFile(e.target.files[0]);
+    }
+
+    function processFile(file) {
+      if (file.size > 25 * 1024 * 1024) {
+        showToast('El archivo excede el límite de 25 MB', 'error');
+        return;
+      }
+      selectedFile = file;
+      const fi = getFileIconInfo(file.type);
+      document.getElementById('selectedFileIcon').className = 'fas ' + fi.icon;
+      document.getElementById('selectedFileIcon').style.color = fi.color;
+      document.getElementById('selectedFileName').textContent = file.name;
+      document.getElementById('selectedFileSize').textContent = formatFileSize(file.size) + ' — ' + file.type;
+      document.getElementById('selectedFile').classList.remove('hidden');
+      document.getElementById('dropzone').classList.add('hidden');
+      document.getElementById('uploadBtn').disabled = false;
+    }
+
+    function clearSelectedFile() {
+      selectedFile = null;
+      document.getElementById('selectedFile').classList.add('hidden');
+      document.getElementById('dropzone').classList.remove('hidden');
+      document.getElementById('uploadBtn').disabled = true;
+      document.getElementById('fileInput').value = '';
+    }
+
+    async function doUpload() {
+      if (!selectedFile) return;
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Cargando...';
+
+      try {
+        // Convertir a base64
+        const base64 = await fileToBase64(selectedFile);
+        const res = await apiCall('uploadFile', {
+          nivel: currentUser.nivel,
+          fileName: selectedFile.name,
+          fileData: base64,
+          mimeType: selectedFile.type,
+          user: currentUser
+        });
+
+        if (res.success) {
+          showToast('Archivo "' + selectedFile.name + '" cargado correctamente', 'success');
+          closeUploadModal();
+          loadFiles(currentUser.nivel);
+        } else {
+          showToast(res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Error al cargar: ' + err.message, 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Cargar documento';
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // Quitar el prefijo "data:...;base64,"
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ====================================================
+    // DESCARGAR ARCHIVO
+    // ====================================================
+    async function doDownload(fileId, fileName, nivel) {
+      try {
+        const res = await apiCall('getDownloadUrl', { fileId, fileName, nivel, user: currentUser });
+        if (res.success) {
+          // Abrir enlace de descarga en nueva pestaña
+          window.open(res.downloadUrl, '_blank');
+          showToast('Descarga iniciada: ' + fileName, 'info');
+        } else {
+          showToast(res.error, 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // ====================================================
+    // ELIMINAR ARCHIVO
+    // ====================================================
+    function askDelete(fileId, fileName, nivel) {
+      pendingDelete = { fileId, fileName, nivel };
+      document.getElementById('deleteFileName').textContent = '"' + fileName + '"';
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal(e) {
+      if (e && e.target !== e.currentTarget) return;
+      document.getElementById('deleteModal').classList.add('hidden');
+      pendingDelete = null;
+    }
+
+    async function confirmDelete() {
+  if (!pendingDelete) return;
+  const btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span>';
+
+  try {
+    const res = await apiCall('deleteFile', {
+      fileId: pendingDelete.fileId,
+      fileName: pendingDelete.fileName,
+      nivel: pendingDelete.nivel,
+      user: currentUser
+    });
+    if (res.success) {
+      const nivelParaRecargar = pendingDelete.nivel; // Guardar antes de que se borre
+      closeDeleteModal();
+      loadFiles(nivelParaRecargar); // Usar la variable guardada
+    } else {
+      showToast(res.error, 'error');
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Eliminar';
+}
+
+    // ====================================================
+    // LOGOUT
+    // ====================================================
+    function logout() {
+      currentUser = null;
+      selectedRole = null;
+      currentTab = 'PREESCOLAR';
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      resetLogin();
+    }
+
+    // ====================================================
+    // TOAST
+    // ====================================================
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.style.pointerEvents = 'auto';
+      const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+      toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${msg}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('out');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ====================================================
+    // UTILIDADES
+    // ====================================================
+    function formatFileSize(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function formatDate(isoStr) {
+      try {
+        const d = new Date(isoStr);
+        return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) +
+          ' ' + d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      } catch { return isoStr; }
+    }
+
+    function getFileIconInfo(mimeType) {
+      if (!mimeType) return { icon: 'fa-file', bg: '#F0F2F5', color: '#6C757D' };
+      if (mimeType.includes('pdf')) return { icon: 'fa-file-pdf', bg: '#FDEDEC', color: '#C0392B' };
+      if (mimeType.includes('word') || mimeType.includes('document')) return { icon: 'fa-file-word', bg: '#EBF5FB', color: '#2980B9' };
+      if (mimeType.includes('sheet') || mimeType.includes('excel')) return { icon: 'fa-file-excel', bg: '#EAFAF1', color: '#27AE60' };
+      if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return { icon: 'fa-file-powerpoint', bg: '#FEF9E7', color: '#D4A017' };
+      if (mimeType.includes('image')) return { icon: 'fa-file-image', bg: '#F4ECF7', color: '#8E44AD' };
+      if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('compressed')) return { icon: 'fa-file-zipper', bg: '#FDEBD0', color: '#E67E22' };
+      return { icon: 'fa-file', bg: '#F0F2F5', color: '#6C757D' };
+    }
+
+    function escapeQuotes(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // ====================================================
+    // INICIO
+    // ====================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Verificar que la URL esté configurada
+      if (APPS_SCRIPT_URL === 'PON_AQUI_LA_URL_DE_TU_APPS_SCRIPT') {
+        document.getElementById('roleSelection').innerHTML = `
+          <div class="col-span-3 bg-white/10 backdrop-blur rounded-xl p-6 text-center text-white">
+            <i class="fas fa-exclamation-triangle text-3xl text-[var(--accent)] mb-3"></i>
+            <p class="font-semibold mb-2">Configuración pendiente</p>
+            <p class="text-sm opacity-80">Abre el archivo HTML y configura la variable <code class="bg-white/20 px-2 py-0.5 rounded text-xs">APPS_SCRIPT_URL</code> con la URL de tu Google Apps Script desplegado.</p>
+          </div>
+        `;
+        document.getElementById('loginForm').classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
