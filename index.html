@@ -367,21 +367,21 @@
 
     // Datos de usuarios (solo para llenar los dropdowns, la validación real está en Apps Script)
     const SUPERVISORES = [
-      'MARTHA VERONICA ALCALA CHAN',
-      'NAYBI RAQUEL MAY ROSEL',
-      'NICE GÓMEZ SOSA'
+      'MARTHA ALCALA',
+      'NAYBI MAY',
+      'NICE GÓMEZ'
     ];
 
     const VISITADORES = [
-      'URSULA SANCHEZ ROCHA','THELMA GUADALUPE LÓPEZ TAMAYO','BERTHA MARÍA CEH CASTILLO',
-      'FILIBERTO ALCOCER OCHOA','REYNA MARIA SANTOS UC','RUBI ANGÉLICA SOLIS XOOL',
-      'JOSÉ WILFREDO VIVAS RAMIREZ','MANUEL FELIPE NAH MARTINEZ','LETICIA DEL SOCORRO CEN RUIZ',
-      'MARÍA LUISA NOVELO SOLIS','ELIA GABRIELA RUÍZ SALDIVAR','GUADALUPE DEL SOCORRO CABALLERO GONZÁLEZ',
-      'ERNESTO RENAN CICERO ORTEGÓN','LETICIA ESPERANZA GÓMEZ GEORGE','ELSY DIANELY ALVARADO CISNEROS',
-      'RAMON IVAN GONZÁLEZ GONZÁLEZ','SARA VIRGINIA LÓPEZ GONZÁLEZ','JOSÉ RODOLFO CASTRO ESPAÑA',
-      'ERIK SAMUEL LAVADORES MAY','NIDIA MARÍA SOLIS ALBERTOS','ANGEL ABIMAEL MUTUL EK',
-      'JORGE EDUARDO CABRERA UCAN','KARINA BEATRIZ PACHECO JIMENEZ','NANCY BEATRIZ PINZÓN CORTES',
-      'ELDA MARÍA GÓMEZ GONZÁLEZ','ANA GABRIELA MARTINEZ TAMAYO'
+      'URSULA SANCHEZ','THELMA LÓPEZ','BERTHA CEH',
+      'FILIBERTO ALCOCER','REYNA SANTOS','RUBI SOLIS',
+      'JOSÉ VIVAS','MANUEL NAH','LETICIA CEN',
+      'MARÍA NOVELO','ELIA RUÍZ','GUADALUPE CABALLERO',
+      'ERNESTO CICERO','LETICIA GÓMEZ','ELSY ALVARADO',
+      'RAMON GONZÁLEZ','SARA LÓPEZ','JOSÉ CASTRO',
+      'ERIK LAVADORES','NIDIA SOLIS','ANGEL MUTUL',
+      'JORGE CABRERA','KARINA PACHECO','NANCY PINZÓN',
+      'ELDA GÓMEZ','ANA MARTINEZ'
     ];
 
     const NIVELES = ['PREESCOLAR', 'PRIMARIA', 'SECUNDARIA'];
@@ -629,6 +629,10 @@
           `;
         }
 
+                // Guardar archivos en variable global para búsqueda
+        window._currentFiles = files;
+        window._currentNivel = nivel;
+
         if (files.length === 0) {
           container.innerHTML = `
             <div class="text-center py-16">
@@ -640,7 +644,17 @@
           return;
         }
 
-        container.innerHTML = `<div class="flex flex-col gap-3">${files.map(f => fileCardHTML(f, nivel)).join('')}</div>`;
+        container.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+            <div class="relative flex-1">
+              <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-sec)] text-sm"></i>
+              <input type="text" id="searchInput" class="input-field pl-10" placeholder="Buscar archivo por nombre..." oninput="filterFiles()" aria-label="Buscar archivo">
+            </div>
+            <span id="fileCount" class="text-sm text-[var(--text-sec)] whitespace-nowrap">${files.length} documento${files.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div id="fileCardsContainer" class="flex flex-col gap-3"></div>
+        `;
+        renderFileCards(files, nivel);
 
       } catch (err) {
         container.innerHTML = `<p class="text-[var(--danger)]">Error al cargar archivos: ${err.message}</p>`;
@@ -676,6 +690,43 @@
     // ====================================================
     // SUBIR ARCHIVO
     // ====================================================
+
+    // ====================================================
+    // RENDERIZAR Y FILTRAR ARCHIVOS
+    // ====================================================
+    function renderFileCards(files, nivel) {
+      const container = document.getElementById('fileCardsContainer');
+      if (!container) return;
+      if (files.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10">
+            <i class="fas fa-search text-3xl text-[var(--border)] mb-3"></i>
+            <p class="text-sm text-[var(--text-sec)]">No se encontraron archivos con ese nombre</p>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = files.map(f => fileCardHTML(f, nivel)).join('');
+    }
+
+    function filterFiles() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const files = window._currentFiles || [];
+      const nivel = window._currentNivel;
+      const filtered = query ? files.filter(f => f.name.toLowerCase().includes(query)) : files;
+      const countEl = document.getElementById('fileCount');
+      if (countEl) {
+        if (query) {
+          countEl.textContent = filtered.length + ' de ' + files.length + ' documento' + (files.length !== 1 ? 's' : '');
+        } else {
+          countEl.textContent = files.length + ' documento' + (files.length !== 1 ? 's' : '');
+        }
+      }
+      renderFileCards(filtered, nivel);
+    }
+
+
+
     function openUploadModal() {
       document.getElementById('uploadModal').classList.remove('hidden');
       clearSelectedFile();
