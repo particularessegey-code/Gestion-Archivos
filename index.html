@@ -127,6 +127,10 @@
     .tab-btn:hover { color: var(--primary); }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--accent); }
 
+    .tab-separator {
+      width: 1px; background: var(--border); margin: 0 4px; align-self: stretch; flex-shrink: 0;
+    }
+
     .file-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 12px;
       padding: 16px; transition: all 0.2s; display: flex; align-items: center; gap: 14px;
@@ -203,6 +207,12 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
+        .mobile-only { display: block; }
+    .desktop-only { display: none; }
+    @media (min-width: 640px) {
+      .mobile-only { display: none !important; }
+      .desktop-only { display: flex !important; }
+    }
   </style>
 </head>
 <body>
@@ -240,14 +250,9 @@
             <i class="fas fa-arrow-left mr-1"></i>Regresar
           </button>
         </div>
-
         <div id="formFields"></div>
-
         <div id="loginError" class="hidden text-[var(--danger)] text-sm mt-3 bg-[var(--danger-light)] p-3 rounded-lg"></div>
-
-        <button class="btn-primary mt-5" id="loginBtn" onclick="doLogin()">
-          Iniciar sesión
-        </button>
+        <button class="btn-primary mt-5" id="loginBtn" onclick="doLogin()">Iniciar sesión</button>
       </div>
     </div>
   </div>
@@ -266,7 +271,6 @@
         </button>
       </div>
     </header>
-
     <main id="mainContent" class="max-w-5xl mx-auto p-4 sm:p-6"></main>
   </div>
 
@@ -275,11 +279,8 @@
     <div class="modal-box" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between mb-5">
         <h3 class="text-lg font-bold">Cargar archivo</h3>
-        <button onclick="closeUploadModal()" class="text-[var(--text-sec)] hover:text-[var(--text)] text-xl" aria-label="Cerrar">
-          <i class="fas fa-times"></i>
-        </button>
+        <button onclick="closeUploadModal()" class="text-[var(--text-sec)] hover:text-[var(--text)] text-xl" aria-label="Cerrar"><i class="fas fa-times"></i></button>
       </div>
-
       <div id="dropzone" class="dropzone" onclick="document.getElementById('fileInput').click()"
            ondragover="event.preventDefault(); this.classList.add('dragover')"
            ondragleave="this.classList.remove('dragover')"
@@ -290,21 +291,15 @@
         <p class="text-xs text-[var(--text-sec)] mt-2">Máximo 25 MB</p>
         <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)">
       </div>
-
       <div id="selectedFile" class="hidden mt-4 bg-[var(--primary-pale)] rounded-xl p-4 flex items-center gap-3">
         <i class="fas fa-file text-[var(--primary)] text-xl" id="selectedFileIcon"></i>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-semibold truncate" id="selectedFileName"></p>
           <p class="text-xs text-[var(--text-sec)]" id="selectedFileSize"></p>
         </div>
-        <button onclick="clearSelectedFile()" class="text-[var(--danger)] hover:text-red-700" aria-label="Quitar archivo">
-          <i class="fas fa-times-circle text-lg"></i>
-        </button>
+        <button onclick="clearSelectedFile()" class="text-[var(--danger)] hover:text-red-700" aria-label="Quitar archivo"><i class="fas fa-times-circle text-lg"></i></button>
       </div>
-
-      <button class="btn-primary mt-5" id="uploadBtn" onclick="doUpload()" disabled>
-        Cargar documento
-      </button>
+      <button class="btn-primary mt-5" id="uploadBtn" onclick="doUpload()" disabled>Cargar documento</button>
     </div>
   </div>
 
@@ -330,20 +325,18 @@
 
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // ====================================================
-    // CONFIGURACIÓN
-    // ====================================================
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlqmkkXe5EYZpDNqypuvn7SKr82LT_cfGZX6xgJnjdEs5PlmYIQr8dijSfN0qBlTQ/exec';
 
     const SUPERVISORES = [
       'MARTHA ALCALA',
       'NAYBI MAY',
       'NICE GÓMEZ',
-      'ANA AGUILAR'
+      'ANA AGUILAR',
+      'GLORIA CASTRO'
     ];
 
     const VISITADORES = [
-      'MARIA NOVELO','THELMA LÓPEZ','BERTHA CEH',
+      'MARÍA NOVELO','THELMA LÓPEZ','BERTHA CEH',
       'FILIBERTO ALCOCER','REYNA SANTOS','RUBI SOLIS',
       'JOSÉ VIVAS','MANUEL NAH','LETICIA CEN',
       'URSULA SANCHEZ','ELIA RUÍZ','GUADALUPE CABALLERO',
@@ -354,12 +347,18 @@
       'ELDA GÓMEZ','ANA MARTINEZ'
     ];
 
-    const NIVELES = ['PREESCOLAR', 'PRIMARIA', 'SECUNDARIA', 'ADMINISTRATIVO'];
+    // Pestañas de visitadores/admin: niveles + pedagógicos
+    const NIVELES_EDUCATIVOS = ['PREESCOLAR', 'PRIMARIA', 'SECUNDARIA', 'ADMINISTRATIVO'];
+    const NIVELES_PEDAGOGICOS = ['CONSEJO TÉCNICO', 'CONCURSOS', 'COLEGIADOS'];
+
     const NIVEL_COLORES = {
       PREESCOLAR:     { bg: '#FFF3CD', text: '#856404', icon: 'fa-child' },
       PRIMARIA:       { bg: '#D1ECF1', text: '#0C5460', icon: 'fa-book-open' },
       SECUNDARIA:     { bg: '#D4EDDA', text: '#155724', icon: 'fa-graduation-cap' },
-      ADMINISTRATIVO: { bg: '#F4ECF7', text: '#6C3483', icon: 'fa-briefcase' }
+      ADMINISTRATIVO: { bg: '#F4ECF7', text: '#6C3483', icon: 'fa-briefcase' },
+      'CONSEJO TÉCNICO': { bg: '#FDEBD0', text: '#A04000', icon: 'fa-users-rectangle' },
+      'CONCURSOS':       { bg: '#FEF9E7', text: '#7D6608', icon: 'fa-trophy' },
+      'COLEGIADOS':      { bg: '#D6EAF8', text: '#1A5276', icon: 'fa-people-group' }
     };
 
     let currentUser = null;
@@ -371,14 +370,24 @@
     // ====================================================
     // COMUNICACIÓN CON EL BACKEND
     // ====================================================
-    async function apiCall(action, data) {
-      const resp = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action, ...data })
-      });
-      if (!resp.ok) throw new Error('Error de conexión con el servidor');
-      return await resp.json();
+        async function apiCall(action, data) {
+      const maxRetries = 2;
+      for (let intento = 0; intento <= maxRetries; intento++) {
+        try {
+          const resp = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action, ...data })
+          });
+          if (!resp.ok) throw new Error('Error de conexión con el servidor');
+          return await resp.json();
+        } catch (err) {
+          // Si es el último intento, lanzar el error
+          if (intento === maxRetries) throw err;
+          // Esperar y reintentar
+          await new Promise(r => setTimeout(r, 2500));
+        }
+      }
     }
 
     // ====================================================
@@ -499,7 +508,7 @@
     // ====================================================
     // DASHBOARD
     // ====================================================
-    function showDashboard() {
+        function showDashboard() {
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('dashboard').classList.remove('hidden');
 
@@ -513,78 +522,211 @@
       } else {
         renderViewerDashboard();
       }
+
+      // Precargar el resto de pestañas en segundo plano
+      preloadAllTabs();
     }
 
-    // --- DASHBOARD ENCARGADA DE NIVEL (incluye Ana Aguilar en ADMINISTRATIVO) ---
-    function renderSupervisorDashboard() {
+    // --- DASHBOARD ENCARGADA DE NIVEL ---
+        function renderSupervisorDashboard() {
       const nivel = currentUser.nivel;
-      const nc = NIVEL_COLORES[nivel];
+      const nc = NIVEL_COLORES[nivel] || { bg: '#E8DAEF', text: '#6C3483', icon: 'fa-chalkboard-user' };
       const main = document.getElementById('mainContent');
 
-      const rolLabel = nivel === 'ADMINISTRATIVO' ? 'Encargada' : 'Encargada de nivel';
+      if (currentUser.carpetas && currentUser.carpetas.length > 0) {
+        const firstTab = currentUser.carpetas[0];
+        window._supervisorCurrentTab = firstTab;
 
-      main.innerHTML = `
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <div class="flex items-center gap-3 mb-1">
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${nc.bg}">
-                <i class="fas ${nc.icon}" style="color:${nc.text}"></i>
-              </div>
-              <h2 class="font-display text-xl sm:text-2xl">${nivel}</h2>
-            </div>
-            <p class="text-sm text-[var(--text-sec)] ml-[52px]">Documentos — ${rolLabel}: ${currentUser.nombre}</p>
+        // Dropdown móvil para subgrupos
+        const mobileSelect = `
+          <div class="mobile-only mb-5">
+            <select id="mobileSupTabSelect" class="input-field text-sm font-semibold" onchange="selectMobileSupTab(this.value)" aria-label="Seleccionar carpeta">
+              ${currentUser.carpetas.map(c => {
+                const cnc = NIVEL_COLORES[c] || { bg: '#F0F2F5', text: '#6C757D', icon: 'fa-folder' };
+                return `<option value="${c}" ${c === firstTab ? 'selected' : ''}>${c}</option>`;
+              }).join('')}
+            </select>
           </div>
-          <button class="btn-accent flex items-center gap-2 self-start" onclick="openUploadModal()">
-            <i class="fas fa-plus"></i> Subir archivo
-          </button>
-        </div>
+        `;
 
-        <div id="fileStats" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6"></div>
-        <div id="fileList"></div>
-      `;
+        // Tabs escritorio
+        const desktopTabs = `
+          <div class="desktop-only border-b border-[var(--border)] mb-6 overflow-x-auto">
+            ${currentUser.carpetas.map(c => {
+              const cnc = NIVEL_COLORES[c] || { bg: '#F0F2F5', text: '#6C757D', icon: 'fa-folder' };
+              return `<button class="tab-btn ${c === firstTab ? 'active' : ''}" data-tab="${c}" onclick="switchSupervisorTab(this)">
+                <i class="fas ${cnc.icon} mr-1.5" style="color:${cnc.text}"></i>${c}
+              </button>`;
+            }).join('')}
+          </div>
+        `;
 
+        main.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div class="flex items-center gap-3 mb-1">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${nc.bg}">
+                  <i class="fas ${nc.icon}" style="color:${nc.text}"></i>
+                </div>
+                <h2 class="font-display text-xl sm:text-2xl">${nivel}</h2>
+              </div>
+              <p class="text-sm text-[var(--text-sec)] ml-[52px]">Documentos — Encargada: ${currentUser.nombre}</p>
+            </div>
+            <button class="btn-accent flex items-center gap-2 self-start" onclick="openUploadModal()">
+              <i class="fas fa-plus"></i> Subir archivo
+            </button>
+          </div>
+          ${mobileSelect}
+          ${desktopTabs}
+          <div id="fileStats" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6"></div>
+          <div id="fileList"></div>
+        `;
+
+        loadFiles(firstTab);
+      } else {
+        main.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div class="flex items-center gap-3 mb-1">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${nc.bg}">
+                  <i class="fas ${nc.icon}" style="color:${nc.text}"></i>
+                </div>
+                <h2 class="font-display text-xl sm:text-2xl">${nivel}</h2>
+              </div>
+              <p class="text-sm text-[var(--text-sec)] ml-[52px]">Documentos — Encargada de nivel: ${currentUser.nombre}</p>
+            </div>
+            <button class="btn-accent flex items-center gap-2 self-start" onclick="openUploadModal()">
+              <i class="fas fa-plus"></i> Subir archivo
+            </button>
+          </div>
+          <div id="fileStats" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6"></div>
+          <div id="fileList"></div>
+        `;
+
+        loadFiles(nivel);
+      }
+    }
+
+    function switchSupervisorTab(btn) {
+      const nivel = btn.getAttribute('data-tab');
+      window._supervisorCurrentTab = nivel;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Sincronizar dropdown móvil
+      const sel = document.getElementById('mobileSupTabSelect');
+      if (sel) sel.value = nivel;
+      loadFiles(nivel);
+    }
+
+    function selectMobileSupTab(nivel) {
+      window._supervisorCurrentTab = nivel;
+      loadFiles(nivel);
+    }
+
+    // Cambiar sub-tab de encargada con subgrupos
+    function switchSupervisorTab(btn) {
+      const nivel = btn.getAttribute('data-tab');
+      window._supervisorCurrentTab = nivel;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       loadFiles(nivel);
     }
 
     // --- DASHBOARD VISITADOR / ADMIN ---
-    function renderViewerDashboard() {
+        function renderViewerDashboard() {
       const main = document.getElementById('mainContent');
       const rolLabel = currentUser.rol === 'visitador' ? 'Visitador — Área ' + currentUser.area : 'Personal Administrativo';
+
+      // Opciones del dropdown móvil y tabs escritorio
+      function tabHTML(n, activa) {
+        const nc = NIVEL_COLORES[n];
+        const sel = activa ? 'selected' : '';
+        const act = activa ? 'active' : '';
+        return {
+          option: `<option value="${n}" ${sel}>${n}</option>`,
+          button: `<button class="tab-btn ${act}" onclick="switchViewerTab(this)">
+            <i class="fas ${nc.icon} mr-1.5" style="color:${nc.text}"></i>${n}
+          </button>`
+        };
+      }
+
+      const tabsEdu = NIVELES_EDUCATIVOS.map(n => tabHTML(n, n === currentTab));
+      const tabsPed = NIVELES_PEDAGOGICOS.map(n => tabHTML(n, n === currentTab));
+
+      // Dropdown para celular
+      const mobileSelect = `
+        <div class="mobile-only mb-5">
+          <select id="mobileTabSelect" class="input-field text-sm font-semibold" onchange="selectMobileTab(this.value)" aria-label="Seleccionar carpeta">
+            <optgroup label="Niveles educativos">
+              ${tabsEdu.map(t => t.option).join('')}
+            </optgroup>
+            <optgroup label="Área pedagógica">
+              ${tabsPed.map(t => t.option).join('')}
+            </optgroup>
+          </select>
+        </div>
+      `;
+
+      // Tabs para escritorio
+      const desktopTabs = `
+        <div class="desktop-only border-b border-[var(--border)] mb-6 overflow-x-auto">
+          ${tabsEdu.map(t => t.button).join('')}
+          <div class="tab-separator"></div>
+          ${tabsPed.map(t => t.button).join('')}
+        </div>
+      `;
 
       main.innerHTML = `
         <div class="mb-6">
           <h2 class="font-display text-xl sm:text-2xl mb-1">Documentos disponibles</h2>
           <p class="text-sm text-[var(--text-sec)]">${rolLabel} — ${currentUser.nombre}</p>
         </div>
-
-        <div class="flex border-b border-[var(--border)] mb-6 overflow-x-auto">
-          ${NIVELES.map(n => {
-            const nc = NIVEL_COLORES[n];
-            return `<button class="tab-btn ${n === currentTab ? 'active' : ''}" onclick="switchTab('${n}')">
-              <i class="fas ${nc.icon} mr-1.5" style="color:${nc.text}"></i>${n}
-            </button>`;
-          }).join('')}
-        </div>
-
+        ${mobileSelect}
+        ${desktopTabs}
         <div id="fileList"></div>
       `;
 
       loadFiles(currentTab);
     }
 
-    function switchTab(nivel) {
+    function selectMobileTab(nivel) {
       currentTab = nivel;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      event.target.closest('.tab-btn').classList.add('active');
       loadFiles(nivel);
+    }
+
+    function switchViewerTab(btn) {
+      currentTab = btn.textContent.trim();
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Sincronizar el dropdown móvil si existe
+      const sel = document.getElementById('mobileTabSelect');
+      if (sel) sel.value = currentTab;
+      loadFiles(currentTab);
+    }
+
+    function switchViewerTab(btn) {
+      currentTab = btn.textContent.trim();
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadFiles(currentTab);
     }
 
     // ====================================================
     // CARGAR Y MOSTRAR ARCHIVOS
     // ====================================================
-    async function loadFiles(nivel) {
+        // Caché de archivos por nivel (evita volver a pedir al servidor)
+    const fileCache = {};
+
+    async function loadFiles(nivel, forzar = false) {
       const container = document.getElementById('fileList');
       if (!container) return;
+
+      // Si ya tenemos datos en caché y no se fuerza recarga, mostrar al instante
+      if (!forzar && fileCache[nivel]) {
+        renderFilesFromCache(nivel);
+        return;
+      }
+
       container.innerHTML = '<div class="spinner-dark"></div>';
 
       const stats = document.getElementById('fileStats');
@@ -594,55 +736,77 @@
         const res = await apiCall('listFiles', { nivel, user: currentUser });
         if (!res.success) { container.innerHTML = `<p class="text-[var(--danger)]">${res.error}</p>`; return; }
 
-        const files = res.files;
-
-        if (stats && currentUser.rol === 'supervisor') {
-          const totalSize = files.reduce((a, f) => a + (f.size || 0), 0);
-          const lastUpload = files.length > 0 ? formatDate(files[0].updated) : 'Sin archivos';
-          stats.innerHTML = `
-            <div class="bg-white rounded-xl p-4 border border-[var(--border)]">
-              <p class="text-2xl font-bold text-[var(--primary)]">${files.length}</p>
-              <p class="text-xs text-[var(--text-sec)]">Archivos totales</p>
-            </div>
-            <div class="bg-white rounded-xl p-4 border border-[var(--border)]">
-              <p class="text-2xl font-bold text-[var(--primary)]">${formatFileSize(totalSize)}</p>
-              <p class="text-xs text-[var(--text-sec)]">Espacio usado</p>
-            </div>
-            <div class="bg-white rounded-xl p-4 border border-[var(--border)] col-span-2 sm:col-span-1">
-              <p class="text-sm font-bold text-[var(--primary)]">${lastUpload}</p>
-              <p class="text-xs text-[var(--text-sec)]">Última carga</p>
-            </div>
-          `;
-        }
-
-        window._currentFiles = files;
-        window._currentNivel = nivel;
-
-        if (files.length === 0) {
-          container.innerHTML = `
-            <div class="text-center py-16">
-              <i class="fas fa-folder-open text-5xl text-[var(--border)] mb-4"></i>
-              <p class="text-[var(--text-sec)] font-medium">No hay documentos en ${nivel}</p>
-              ${currentUser.rol === 'supervisor' ? '<p class="text-sm text-[var(--text-sec)] mt-1">Haz clic en "Subir archivo" para comenzar</p>' : ''}
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = `
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-            <div class="relative flex-1">
-              <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-sec)] text-sm"></i>
-              <input type="text" id="searchInput" class="input-field pl-10" placeholder="Buscar archivo por nombre..." oninput="filterFiles()" aria-label="Buscar archivo">
-            </div>
-            <span id="fileCount" class="text-sm text-[var(--text-sec)] whitespace-nowrap">${files.length} documento${files.length !== 1 ? 's' : ''}</span>
-          </div>
-          <div id="fileCardsContainer" class="flex flex-col gap-3"></div>
-        `;
-        renderFileCards(files, nivel);
+        // Guardar en caché
+        fileCache[nivel] = res.files;
+        renderFilesFromCache(nivel);
 
       } catch (err) {
         container.innerHTML = `<p class="text-[var(--danger)]">Error al cargar archivos: ${err.message}</p>`;
+      }
+    }
+
+    function renderFilesFromCache(nivel) {
+      const files = fileCache[nivel] || [];
+      const container = document.getElementById('fileList');
+      const stats = document.getElementById('fileStats');
+      if (!container) return;
+
+      // Stats (solo supervisor)
+      if (stats && currentUser.rol === 'supervisor') {
+        const totalSize = files.reduce((a, f) => a + (f.size || 0), 0);
+        const lastUpload = files.length > 0 ? formatDate(files[0].updated) : 'Sin archivos';
+        stats.innerHTML = `
+          <div class="bg-white rounded-xl p-4 border border-[var(--border)]">
+            <p class="text-2xl font-bold text-[var(--primary)]">${files.length}</p>
+            <p class="text-xs text-[var(--text-sec)]">Archivos totales</p>
+          </div>
+          <div class="bg-white rounded-xl p-4 border border-[var(--border)]">
+            <p class="text-2xl font-bold text-[var(--primary)]">${formatFileSize(totalSize)}</p>
+            <p class="text-xs text-[var(--text-sec)]">Espacio usado</p>
+          </div>
+          <div class="bg-white rounded-xl p-4 border border-[var(--border)] col-span-2 sm:col-span-1">
+            <p class="text-sm font-bold text-[var(--primary)]">${lastUpload}</p>
+            <p class="text-xs text-[var(--text-sec)]">Última carga</p>
+          </div>
+        `;
+      }
+
+      window._currentFiles = files;
+      window._currentNivel = nivel;
+
+      if (files.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-16">
+            <i class="fas fa-folder-open text-5xl text-[var(--border)] mb-4"></i>
+            <p class="text-[var(--text-sec)] font-medium">No hay documentos en ${nivel}</p>
+            ${currentUser.rol === 'supervisor' ? '<p class="text-sm text-[var(--text-sec)] mt-1">Haz clic en "Subir archivo" para comenzar</p>' : ''}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <div class="relative flex-1">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-sec)] text-sm"></i>
+            <input type="text" id="searchInput" class="input-field pl-10" placeholder="Buscar archivo por nombre..." oninput="filterFiles()" aria-label="Buscar archivo">
+          </div>
+          <button onclick="refreshFiles()" class="btn-outline text-xs px-3 py-2 flex items-center gap-1.5 whitespace-nowrap" title="Actualizar lista">
+            <i class="fas fa-sync-alt"></i> Actualizar
+          </button>
+          <span id="fileCount" class="text-sm text-[var(--text-sec)] whitespace-nowrap">${files.length} documento${files.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div id="fileCardsContainer" class="flex flex-col gap-3"></div>
+      `;
+      renderFileCards(files, nivel);
+    }
+
+    function refreshFiles() {
+      const nivel = window._currentNivel;
+      if (nivel) {
+        delete fileCache[nivel];
+        loadFiles(nivel, true);
+        showToast('Actualizando lista de archivos...', 'info');
       }
     }
 
@@ -661,10 +825,10 @@
             </p>
           </div>
           <div class="file-actions flex items-center gap-2 flex-shrink-0">
-            <button class="btn-outline text-xs px-3 py-1.5" onclick="doDownload('${file.id}','${escapeQuotes(file.name)}','${nivel}')">
+            <button class="btn-outline text-xs px-3 py-1.5" onclick="doDownload('${file.id}','${escapeQuotes(file.name)}','${escapeQuotes(nivel)}')">
               <i class="fas fa-download mr-1"></i>Descargar
             </button>
-            ${isSup ? `<button class="btn-danger-sm" onclick="askDelete('${file.id}','${escapeQuotes(file.name)}','${nivel}')">
+            ${isSup ? `<button class="btn-danger-sm" onclick="askDelete('${file.id}','${escapeQuotes(file.name)}','${escapeQuotes(nivel)}')">
               <i class="fas fa-trash-alt"></i>
             </button>` : ''}
           </div>
@@ -694,11 +858,9 @@
       const filtered = query ? files.filter(f => f.name.toLowerCase().includes(query)) : files;
       const countEl = document.getElementById('fileCount');
       if (countEl) {
-        if (query) {
-          countEl.textContent = filtered.length + ' de ' + files.length + ' documento' + (files.length !== 1 ? 's' : '');
-        } else {
-          countEl.textContent = files.length + ' documento' + (files.length !== 1 ? 's' : '');
-        }
+        countEl.textContent = query
+          ? filtered.length + ' de ' + files.length + ' documento' + (files.length !== 1 ? 's' : '')
+          : files.length + ' documento' + (files.length !== 1 ? 's' : '');
       }
       renderFileCards(filtered, nivel);
     }
@@ -750,8 +912,9 @@
       document.getElementById('fileInput').value = '';
     }
 
-    async function doUpload() {
+        async function doUpload() {
       if (!selectedFile) return;
+      const nivelActivo = window._currentNivel || currentUser.nivel;
       const btn = document.getElementById('uploadBtn');
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span> Cargando...';
@@ -759,7 +922,7 @@
       try {
         const base64 = await fileToBase64(selectedFile);
         const res = await apiCall('uploadFile', {
-          nivel: currentUser.nivel,
+          nivel: nivelActivo,
           fileName: selectedFile.name,
           fileData: base64,
           mimeType: selectedFile.type,
@@ -769,7 +932,9 @@
         if (res.success) {
           showToast('Archivo "' + selectedFile.name + '" cargado correctamente', 'success');
           closeUploadModal();
-          loadFiles(currentUser.nivel);
+          // Invalidar caché y recargar
+          delete fileCache[nivelActivo];
+          loadFiles(nivelActivo, true);
         } else {
           showToast(res.error, 'error');
         }
@@ -784,10 +949,7 @@
     function fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result.split(',')[1];
-          resolve(base64);
-        };
+        reader.onload = () => resolve(reader.result.split(',')[1]);
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
@@ -825,7 +987,7 @@
       pendingDelete = null;
     }
 
-    async function confirmDelete() {
+        async function confirmDelete() {
       if (!pendingDelete) return;
       const btn = document.getElementById('confirmDeleteBtn');
       btn.disabled = true;
@@ -841,7 +1003,9 @@
         if (res.success) {
           const nivelParaRecargar = pendingDelete.nivel;
           closeDeleteModal();
-          loadFiles(nivelParaRecargar);
+          // Invalidar caché y recargar
+          delete fileCache[nivelParaRecargar];
+          loadFiles(nivelParaRecargar, true);
         } else {
           showToast(res.error, 'error');
         }
@@ -876,7 +1040,6 @@
       const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
       toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${msg}</span>`;
       container.appendChild(toast);
-
       setTimeout(() => {
         toast.classList.add('out');
         setTimeout(() => toast.remove(), 300);
@@ -905,16 +1068,54 @@
     function getFileIconInfo(mimeType) {
       if (!mimeType) return { icon: 'fa-file', bg: '#F0F2F5', color: '#6C757D' };
       if (mimeType.includes('pdf')) return { icon: 'fa-file-pdf', bg: '#FDEDEC', color: '#C0392B' };
-      if (mimeType.includes('word') || mimeType.includes('document')) return { icon: 'fa-file-word', bg: '#EBF5FB', color: '#2980B9' };
-      if (mimeType.includes('sheet') || mimeType.includes('excel')) return { icon: 'fa-file-excel', bg: '#EAFAF1', color: '#27AE60' };
       if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return { icon: 'fa-file-powerpoint', bg: '#FEF9E7', color: '#D4A017' };
+      if (mimeType.includes('sheet') || mimeType.includes('excel')) return { icon: 'fa-file-excel', bg: '#EAFAF1', color: '#27AE60' };
+      if (mimeType.includes('word')) return { icon: 'fa-file-word', bg: '#EBF5FB', color: '#2980B9' };
       if (mimeType.includes('image')) return { icon: 'fa-file-image', bg: '#F4ECF7', color: '#8E44AD' };
       if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('compressed')) return { icon: 'fa-file-zipper', bg: '#FDEBD0', color: '#E67E22' };
       return { icon: 'fa-file', bg: '#F0F2F5', color: '#6C757D' };
     }
 
     function escapeQuotes(str) {
-      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+        // Mantener el script "caliente" para evitar cold starts
+    function keepWarm() {
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'ping' })
+      }).catch(() => {});
+    }
+    keepWarm();
+    setInterval(keepWarm, 4 * 60 * 1000);
+
+        // Precargar todas las pestañas en segundo plano después del login
+    function preloadAllTabs() {
+      let tabs = [];
+      if (currentUser.rol === 'supervisor' && currentUser.carpetas) {
+        tabs = [...currentUser.carpetas];
+      } else if (currentUser.rol === 'supervisor') {
+        tabs = [currentUser.nivel];
+      } else {
+        tabs = [...NIVELES_EDUCATIVOS, ...NIVELES_PEDAGOGICOS];
+      }
+
+      // Excluir la pestaña que ya se está mostrando
+      const activa = window._supervisorCurrentTab || currentTab;
+      const porCargar = tabs.filter(t => t !== activa);
+
+      let delay = 1500;
+      porCargar.forEach(tab => {
+        setTimeout(() => {
+          if (!fileCache[tab]) {
+            apiCall('listFiles', { nivel: tab, user: currentUser })
+              .then(res => { if (res.success) fileCache[tab] = res.files; })
+              .catch(() => {});
+          }
+        }, delay);
+        delay += 2500;
+      });
     }
   </script>
 </body>
