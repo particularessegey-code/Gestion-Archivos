@@ -320,6 +320,37 @@
     </div>
   </div>
 
+      <!-- ==================== MODAL VISTA PREVIA ==================== -->
+  <div id="previewModal" class="modal-overlay hidden" onclick="closePreview(event)">
+    <div class="bg-white rounded-2xl overflow-hidden flex flex-col" style="width:95vw; max-width:900px; height:85vh; max-height:700px; animation:slideUp 0.3s ease;" onclick="event.stopPropagation()">
+      <!-- Barra superior -->
+      <div class="flex items-center justify-between px-4 py-3 bg-[var(--primary)] flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <i class="fas fa-eye text-[var(--accent)]"></i>
+          <span id="previewTitle" class="text-white text-sm font-semibold truncate"></span>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <a id="previewDownload" href="#" target="_blank" class="text-white/80 hover:text-white text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 no-underline">
+            <i class="fas fa-download"></i><span class="hidden sm:inline">Descargar</span>
+          </a>
+          <button onclick="closePreview()" class="text-white/80 hover:text-white text-sm bg-white/10 hover:bg-white/20 w-9 h-9 rounded-lg transition flex items-center justify-center" aria-label="Cerrar">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Contenido -->
+      <div class="flex-1 relative bg-[var(--bg)]">
+        <iframe id="previewFrame" class="w-full h-full border-0" allow="autoplay"></iframe>
+        <div id="previewLoader" class="absolute inset-0 flex items-center justify-center">
+          <div class="text-center">
+            <div class="spinner-dark"></div>
+            <p class="text-sm text-[var(--text-sec)] mt-4">Cargando vista previa...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== TOASTS ==================== -->
   <div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-2" style="pointer-events:none;"></div>
 
@@ -810,7 +841,7 @@
       }
     }
 
-    function fileCardHTML(file, nivel) {
+        function fileCardHTML(file, nivel) {
       const fi = getFileIconInfo(file.type);
       const isSup = currentUser.rol === 'supervisor';
       return `
@@ -824,7 +855,10 @@
               ${formatFileSize(file.size)} &middot; ${formatDate(file.updated)}
             </p>
           </div>
-          <div class="file-actions flex items-center gap-2 flex-shrink-0">
+          <div class="file-actions flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+            <button class="btn-outline text-xs px-3 py-1.5" onclick="openPreview('${file.id}','${escapeQuotes(file.name)}')" title="Vista previa">
+              <i class="fas fa-eye mr-1"></i>Ver
+            </button>
             <button class="btn-outline text-xs px-3 py-1.5" onclick="doDownload('${file.id}','${escapeQuotes(file.name)}','${escapeQuotes(nivel)}')">
               <i class="fas fa-download mr-1"></i>Descargar
             </button>
@@ -1016,6 +1050,47 @@
       btn.disabled = false;
       btn.textContent = 'Eliminar';
     }
+
+        // ====================================================
+    // VISTA PREVIA
+    // ====================================================
+    function openPreview(fileId, fileName) {
+      const modal = document.getElementById('previewModal');
+      const frame = document.getElementById('previewFrame');
+      const loader = document.getElementById('previewLoader');
+      const title = document.getElementById('previewTitle');
+      const dlLink = document.getElementById('previewDownload');
+
+      title.textContent = fileName;
+      dlLink.href = 'https://drive.google.com/uc?export=download&id=' + fileId;
+      loader.classList.remove('hidden');
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      // Usar el visor de Google Drive
+      frame.src = 'https://drive.google.com/file/d/' + fileId + '/preview';
+
+      // Ocultar loader cuando el iframe cargue
+      frame.onload = () => loader.classList.add('hidden');
+      // Por si falla la carga, ocultar loader después de 15 segundos
+      setTimeout(() => loader.classList.add('hidden'), 15000);
+    }
+
+    function closePreview(e) {
+      if (e && e.target !== e.currentTarget && !e.target.closest('button')) return;
+      const modal = document.getElementById('previewModal');
+      const frame = document.getElementById('previewFrame');
+      modal.classList.add('hidden');
+      frame.src = '';
+      document.body.style.overflow = '';
+    }
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('previewModal').classList.contains('hidden')) {
+        closePreview();
+      }
+    });
 
     // ====================================================
     // LOGOUT
